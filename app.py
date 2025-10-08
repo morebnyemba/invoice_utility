@@ -638,31 +638,48 @@ def page_manage_projects():
         clients = fetch_all_clients()
     PROJECT_STATUSES = ["Not Started", "In Progress", "On Hold", "Completed", "Cancelled"]
 
+    # Check if there are clients first
+    if not clients:
+        st.warning("You must add a client before you can create a project.")
+        # Show the form but disabled or with a message
+        with st.form("project_form"):
+            st.subheader("Add New Project")
+            st.info("Please add a client first from the 'Manage Clients' page.")
+            # Add a disabled submit button
+            submitted = st.form_submit_button("Add Project", disabled=True)
+        st.stop()
+    
     with st.form("project_form"):
         st.subheader("Add New Project")
-        if not clients: st.warning("You must add a client before you can create a project."); st.stop()
         
         col1, col2 = st.columns(2)
         client_id = col1.selectbox("Assign to Client", options=[c['id'] for c in clients], format_func=lambda x: next(c['name'] for c in clients if c['id'] == x))
-        name = st.text_input("Project Name")
+        name = col1.text_input("Project Name")
         budget = col2.number_input("Budget (USD)", min_value=0.0, step=100.0)
         status = col2.selectbox("Status", PROJECT_STATUSES)
         description = st.text_area("Description")
         
-        if st.form_submit_button("Add Project"):
+        # Add the missing submit button here
+        submitted = st.form_submit_button("Add Project", type="primary")
+        
+        if submitted:
             if name:
                 with get_db_connection() as conn:
                     created_at = datetime.datetime.now().isoformat()
                     conn.execute("INSERT INTO projects (id, client_id, name, budget, status, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)", 
                                (str(uuid.uuid4())[:8], client_id, sanitize_input(name), budget, status, sanitize_input(description), created_at))
                     conn.commit()
-                st.success("Project added!"); st.rerun()
-            else: st.error("Project Name is required.")
+                st.success("Project added!")
+                st.rerun()
+            else:
+                st.error("Project Name is required.")
     
     st.markdown("---")
     st.subheader("Existing Projects")
     projects = fetch_all_projects_with_client_info()
-    if not projects: st.info("No projects found."); return
+    if not projects:
+        st.info("No projects found.")
+        return
 
     for proj in projects:
         with st.expander(f"**{proj['name']}** ({proj['client_name']}) - Status: `{proj['status']}`"):
@@ -676,12 +693,16 @@ def page_manage_projects():
                 status = st.selectbox("Status", PROJECT_STATUSES, index=PROJECT_STATUSES.index(proj['status']), key=f"status_{proj['id']}")
                 
                 col1, col2 = st.columns([1,1])
-                if col1.form_submit_button("Update Project", type="primary"):
+                submitted_edit = col1.form_submit_button("Update Project", type="primary")
+                submitted_delete = col2.form_submit_button("🗑️ Delete Project")
+                
+                if submitted_edit:
                     with get_db_connection() as conn:
                         conn.execute("UPDATE projects SET name=?, budget=?, status=? WHERE id=?", (sanitize_input(name), budget, status, proj['id']))
                         conn.commit()
                     st.rerun()
-                if col2.form_submit_button("🗑️ Delete Project"):
+                
+                if submitted_delete:
                     with get_db_connection() as conn:
                         conn.execute("DELETE FROM projects WHERE id=?", (proj['id'],))
                         conn.commit()
