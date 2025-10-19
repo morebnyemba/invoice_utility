@@ -17,6 +17,10 @@ import secrets # For generating secure tokens for sharing
 import re
 import time
 from contextlib import contextmanager
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
 import bcrypt
 import json
 
@@ -148,6 +152,13 @@ def check_and_set_default_settings():
         "COMPANY_EMAIL": "info@slykertech.co.zw",
         "COMPANY_TIN": "TIN: 1001672571",
         "BANK_DETAILS": "<b>Payment Details:</b><br/>Ecocash: +263787211325 (Moreblessing Nyemba)<br/>Innbucks: +263787211325 (Moreblessing Nyemba)<br/>Omari: +263787211325 (Moreblessing Nyemba)<br/>"
+        "BANK_DETAILS": "<b>Payment Details:</b><br/>Ecocash: +263787211325 (Moreblessing Nyemba)<br/>Innbucks: +263787211325 (Moreblessing Nyemba)<br/>Omari: +263787211325 (Moreblessing Nyemba)<br/>",
+        "SMTP_SERVER": "",
+        "SMTP_PORT": "465",
+        "SMTP_USERNAME": "",
+        "SMTP_SENDER_EMAIL": "",
+        "EMAIL_SUBJECT": "Invoice from {company_name}",
+        "EMAIL_BODY": "Dear {client_name},<br><br>Please find attached your invoice {invoice_id} for a total of ${total}.<br><br>Thank you for your business!<br><br>Best regards,<br>{company_name}"
     }
     with get_db_connection() as conn:
         for key, value in defaults.items():
@@ -314,7 +325,13 @@ def generate_invoice_pdf(invoice_data, settings):
     elements.append(details_table)
     elements.append(Spacer(1, 1*cm))
 
-    services = ast.literal_eval(invoice_data['services'])
+    try:
+        services = ast.literal_eval(invoice_data['services'])
+        if not isinstance(services, list):
+            services = [("Error parsing services", 0.0)]
+    except (ValueError, SyntaxError):
+        services = [("Error: Service data is corrupt.", 0.0)]
+
     data = [["SERVICE DESCRIPTION", "PRICE"]]
     for service, price in services:
         data.append([Paragraph(service, styles['Normal']), f"${price:,.2f}"])
@@ -367,6 +384,49 @@ def generate_invoice_pdf(invoice_data, settings):
 
     doc.build(elements, onFirstPage=add_watermark, onLaterPages=add_watermark)
     return filename
+
+# ---------- EMAIL UTILITY ----------
+@with_loading("Sending email...")
+def send_invoice_email(invoice_data, settings, recipient_email):
+    """Sends an invoice PDF via email."""
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    if not all([settings.get("SMTP_SERVER"), settings.get("SMTP_PORT"), settings.get("SMTP_USERNAME"), smtp_password, settings.get("SMTP_SENDER_EMAIL")]):
+        st.error("SMTP settings are not fully configured. Please check Settings and ensure the SMTP_PASSWORD environment variable is set.")
+        return False
+
+    pdf_filename = generate_invoice_pdf(invoice_data, settings)
+
+    msg = MIMEMultipart()
+    msg['From'] = settings["SMTP_SENDER_EMAIL"]
+    msg['To'] = recipient_email
+    
+    subject_template = settings.get("EMAIL_SUBJECT", "Invoice from {company_name}")
+    msg['Subject'] = subject_template.format(company_name=settings.get("COMPANY_NAME", ""))
+
+    body_template = settings.get("EMAIL_BODY", "Please find your invoice attached.")
+    body = body_template.format(
+        client_name=invoice_data['name'],
+        invoice_id=invoice_data['id'],
+        total=f"{invoice_data['total']:,.2f}",
+        company_name=settings.get("COMPANY_NAME", "")
+    )
+    msg.attach(MIMEText(body, 'html'))
+
+    with open(pdf_filename, "rb") as f:
+        attach = MIMEApplication(f.read(), _subtype="pdf")
+        attach.add_header('Content-Disposition', 'attachment', filename=str(pdf_filename))
+        msg.attach(attach)
+
+    try:
+        with smtplib.SMTP_SSL(settings["SMTP_SERVER"], int(settings["SMTP_PORT"])) as server:
+            server.login(settings["SMTP_USERNAME"], smtp_password)
+            server.send_message(msg)
+        os.remove(pdf_filename) # Clean up the generated PDF
+        return True
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+        os.remove(pdf_filename) # Clean up even if it fails
+        return False
 
 # ---------- UI HELPER ----------
 def get_time_of_day_greeting():
@@ -582,7 +642,11 @@ def page_invoice_dashboard():
         status_emoji = "🟢" if inv['status'] == 'paid' else "🟡" if inv['status'] == 'partially_paid' else "🔴"
         with st.expander(f"{status_emoji} **{inv['id']}** - {inv['name']} - `${inv['total']:,.2f}`"):
             st.write(f"**Client:** {inv['name']} | **Email:** {inv['email']} | **Phone:** {inv['phone']}")
-            services = ast.literal_eval(inv['services']); st.write("**Services:**")
+            try:
+                services = ast.literal_eval(inv['services'])
+            except (ValueError, SyntaxError):
+                services = [("Error parsing services.", "")]
+            st.write("**Services:**")
             for service, price in services: st.markdown(f"- {service}: `${price:,.2f}`")
             st.markdown(f"**Total:** `${inv['total']:,.2f}` | **Status:** `{inv['status'].upper().replace('_', ' ')}`")
             
@@ -594,6 +658,7 @@ def page_invoice_dashboard():
                     st.write(f"- ${payment['amount']:,.2f} on {payment['date']} via {payment['method']}")
             
             b_col1, b_col2, b_col3, b_col4, b_col5 = st.columns(5)
+            b_col1, b_col2, b_col3, b_col4, b_col5, b_col6 = st.columns(6)
             pdf_file = generate_invoice_pdf(inv, settings)
             with open(pdf_file, "rb") as file: 
                 b_col1.download_button("📄 PDF", file, pdf_file, "application/pdf", key=f"pdf_{inv['id']}")
@@ -629,7 +694,14 @@ def page_invoice_dashboard():
                                (str(uuid.uuid4()), inv['id'], token, expiry, created_at))
                     conn.commit()
                     share_link = f"{st.get_option('server.baseUrlPath')}?invoice_id={inv['id']}&token={token}"
-                    st.code(share_link); st.info("Link is valid for 30 days.")
+                    st.code(share_link, language="bash", line_numbers=False); st.info("Link is valid for 30 days. Click the icon above to copy.")
+                
+                if b_col6.button("📧 Send Email", key=f"email_{inv['id']}"):
+                    if inv['email']:
+                        if send_invoice_email(inv, settings, inv['email']):
+                            st.success(f"Invoice sent to {inv['email']}")
+                    else:
+                        st.warning("This client does not have an email address on file.")
 
 def page_manage_projects():
     """Page for managing projects."""
@@ -641,12 +713,7 @@ def page_manage_projects():
     # Check if there are clients first
     if not clients:
         st.warning("You must add a client before you can create a project.")
-        # Show the form but disabled or with a message
-        with st.form("project_form"):
-            st.subheader("Add New Project")
-            st.info("Please add a client first from the 'Manage Clients' page.")
-            # Add a disabled submit button
-            submitted = st.form_submit_button("Add Project", disabled=True)
+        st.info("Please add a client first from the 'Manage Clients' page.")
         st.stop()
     
     with st.form("project_form"):
@@ -686,6 +753,7 @@ def page_manage_projects():
             with st.form(key=f"edit_proj_{proj['id']}"):
                 st.write(f"**Budget:** ${proj['budget']:,.2f}")
                 st.write(f"**Description:** {proj['description']}")
+                description = st.text_area("Description", value=proj['description'], key=f"desc_{proj['id']}")
                 st.markdown("---")
                 st.subheader("Edit Project")
                 name = st.text_input("Project Name", value=proj['name'], key=f"name_{proj['id']}")
@@ -696,13 +764,20 @@ def page_manage_projects():
                 submitted_edit = col1.form_submit_button("Update Project", type="primary")
                 submitted_delete = col2.form_submit_button("🗑️ Delete Project")
                 
+                submitted_edit = st.form_submit_button("Update Project", type="primary")
                 if submitted_edit:
                     with get_db_connection() as conn:
                         conn.execute("UPDATE projects SET name=?, budget=?, status=? WHERE id=?", (sanitize_input(name), budget, status, proj['id']))
+                        conn.execute("UPDATE projects SET name=?, budget=?, status=?, description=? WHERE id=?", (sanitize_input(name), budget, status, sanitize_input(description), proj['id']))
                         conn.commit()
                     st.rerun()
                 
                 if submitted_delete:
+            
+            # Delete button outside the form
+            st.error("Danger Zone")
+            if st.checkbox("Confirm deletion of this project?", key=f"del_check_{proj['id']}"):
+                if st.button("🗑️ Delete Project Permanently", key=f"del_btn_{proj['id']}"):
                     with get_db_connection() as conn:
                         conn.execute("DELETE FROM projects WHERE id=?", (proj['id'],))
                         conn.commit()
@@ -713,10 +788,34 @@ def page_manage_clients():
     st.header("👥 Manage Clients")
     with st.spinner('Loading clients...'):
         clients = fetch_all_clients()
+
+    with st.expander("➕ Add New Client", expanded=not clients):
+        with st.form("new_client_form"):
+            name = st.text_input("Client Name*")
+            email = st.text_input("Client Email")
+            phone = st.text_input("Client Phone")
+            if st.form_submit_button("Add Client", type="primary"):
+                if not name:
+                    st.error("Client Name is required.")
+                elif email and not validate_email(email):
+                    st.error("Please enter a valid email address.")
+                elif phone and not validate_phone(phone):
+                    st.error("Please enter a valid phone number.")
+                else:
+                    with get_db_connection() as conn:
+                        created_at = datetime.datetime.now().isoformat()
+                        conn.execute('INSERT INTO clients (id, name, email, phone, created_at) VALUES (?, ?, ?, ?, ?)', 
+                                   (str(uuid.uuid4())[:8].upper(), sanitize_input(name), sanitize_input(email), sanitize_input(phone), created_at))
+                        conn.commit()
+                    st.success(f"Client '{name}' added successfully.")
+                    st.rerun()
+
+    st.subheader("Existing Clients")
     if not clients: st.info("No clients found."); return
 
     df = pd.DataFrame(clients, columns=clients[0].keys()) if clients else pd.DataFrame()
     st.dataframe(df.drop('id', axis=1), use_container_width=True, hide_index=True)
+    st.dataframe(df[['name', 'email', 'phone', 'created_at']], use_container_width=True, hide_index=True)
     st.subheader("Manage Selected Client")
     
     if clients:
@@ -865,9 +964,11 @@ def page_settings():
     settings = fetch_settings()
     
     tab1, tab2 = st.tabs(["Company Settings", "Security & Backup"])
+    tab1, tab2, tab3 = st.tabs(["🏢 Company & Invoice", "📧 Email (SMTP)", "🔒 Security & Backup"])
     
     with tab1:
         with st.form("settings_form"):
+        with st.form("company_settings_form"):
             st.subheader("Company Information")
             company_name = st.text_input("Company Name", settings.get("COMPANY_NAME", ""))
             company_address = st.text_area("Address", settings.get("COMPANY_ADDRESS", ""))
@@ -877,6 +978,7 @@ def page_settings():
             st.subheader("Payment Details")
             bank_details = st.text_area("Payment Details (HTML)", settings.get("BANK_DETAILS", ""), height=150)
             if st.form_submit_button("Save Settings", type="primary"):
+            if st.form_submit_button("Save Company Settings", type="primary"):
                 updated_settings = {
                     "COMPANY_NAME": sanitize_input(company_name),
                     "COMPANY_ADDRESS": sanitize_input(company_address),
@@ -892,7 +994,39 @@ def page_settings():
                 st.success("Settings saved!")
                 st.rerun()
     
+
     with tab2:
+        with st.form("email_settings_form"):
+            st.subheader("SMTP Server Settings")
+            st.info("These settings are required to send invoices via email. The SMTP password must be set as an environment variable named `SMTP_PASSWORD` for security.")
+            
+            smtp_server = st.text_input("SMTP Server", settings.get("SMTP_SERVER", ""))
+            smtp_port = st.text_input("SMTP Port", settings.get("SMTP_PORT", "465"))
+            smtp_username = st.text_input("SMTP Username", settings.get("SMTP_USERNAME", ""))
+            smtp_sender_email = st.text_input("Sender Email Address", settings.get("SMTP_SENDER_EMAIL", ""))
+            
+            st.subheader("Email Templates")
+            email_subject = st.text_input("Email Subject Template", settings.get("EMAIL_SUBJECT", ""))
+            email_body = st.text_area("Email Body Template (HTML)", settings.get("EMAIL_BODY", ""), height=200)
+            st.caption("Use placeholders: `{company_name}`, `{client_name}`, `{invoice_id}`, `{total}`")
+
+            if st.form_submit_button("Save Email Settings", type="primary"):
+                updated_settings = {
+                    "SMTP_SERVER": sanitize_input(smtp_server),
+                    "SMTP_PORT": sanitize_input(smtp_port),
+                    "SMTP_USERNAME": sanitize_input(smtp_username),
+                    "SMTP_SENDER_EMAIL": sanitize_input(smtp_sender_email),
+                    "EMAIL_SUBJECT": email_subject,
+                    "EMAIL_BODY": email_body
+                }
+                with get_db_connection() as conn:
+                    for key, value in updated_settings.items():
+                        conn.execute("UPDATE settings SET value=? WHERE key=?", (value, key))
+                    conn.commit()
+                st.success("Email settings saved!")
+                st.rerun()
+
+    with tab3:
         st.subheader("Database Backup")
         st.info("Create a backup of your entire database for safekeeping.")
         
@@ -1001,8 +1135,10 @@ def main_app():
     """The main application interface, shown after successful login."""
     # Check session timeout
     if check_session_timeout():
-        st.session_state.authenticated = False
-        st.error("Your session has expired. Please log in again.")
+        # Clear session state on timeout
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.warning("Your session has expired. Please log in again.")
         st.rerun()
     
     settings = fetch_settings()
