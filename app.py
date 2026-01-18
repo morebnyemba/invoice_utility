@@ -182,12 +182,12 @@ def init_db():
 def check_and_set_default_settings():
     """Checks for default settings and creates them if they don't exist."""
     defaults = {
-        "COMPANY_NAME": "Slyker Tech Web Services",
-        "COMPANY_ADDRESS": "2789 Dada Cresent, Budiriro 2, Harare, Zimbabwe",
-        "COMPANY_PHONE": "+263787211325",
-        "COMPANY_EMAIL": "info@slykertech.co.zw",
-        "COMPANY_TIN": "TIN: 1001672571",
-        "BANK_DETAILS": "<b>Payment Details:</b><br/>Ecocash: +263787211325 (Moreblessing Nyemba)<br/>Innbucks: +263787211325 (Moreblessing Nyemba)<br/>Omari: +263787211325 (Moreblessing Nyemba)<br/>",
+        "COMPANY_NAME": "Your Company Name",
+        "COMPANY_ADDRESS": "Your Company Address",
+        "COMPANY_PHONE": "Your Phone Number",
+        "COMPANY_EMAIL": "your-email@company.com",
+        "COMPANY_TIN": "Your Tax ID Number",
+        "BANK_DETAILS": "<b>Payment Details:</b><br/>Bank Name: Your Bank<br/>Account Number: Your Account<br/>Account Name: Your Name<br/>",
         "SMTP_SERVER": "",
         "SMTP_PORT": "465",
         "SMTP_USERNAME": "",
@@ -1249,6 +1249,10 @@ def main_app():
     settings = fetch_settings()
     st.sidebar.title(settings.get("COMPANY_NAME", "Invoice System"))
     st.sidebar.header(f"Welcome, {st.session_state.username}")
+    
+    # Show first-time setup notice if company details not configured
+    if settings.get("COMPANY_NAME") == "Your Company Name":
+        st.sidebar.info("👋 **First time here?** Configure your business details in Settings → Company & Invoice")
     
     # Show session timeout warning
     elapsed_time = time.time() - st.session_state.login_time

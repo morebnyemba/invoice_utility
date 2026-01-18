@@ -1,18 +1,22 @@
 # Quick Start Guide
 
+## ✈️ Works 100% Offline!
+
+This invoice utility is designed to work **completely offline**. No internet connection needed for any core features.
+
 ## Getting Started in 5 Minutes
 
-### Option 1: Basic Setup (SQLite - No Configuration Needed)
+### Option 1: Basic Setup (Recommended - Works Offline)
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/morebnyemba/invoice_utility.git
 cd invoice_utility
 
-# 2. Install dependencies
+# 2. Install dependencies (one-time, requires internet)
 pip install -r requirements.txt
 
-# 3. Run the application
+# 3. Run the application (works offline from now on!)
 streamlit run app.py
 
 # 4. Open your browser to the URL shown (usually http://localhost:8501)
@@ -20,9 +24,24 @@ streamlit run app.py
 # 5. Create your admin account on first run
 ```
 
-That's it! You're ready to create invoices.
+### ⚙️ Configure YOUR Business Details
 
-### Option 2: Production Setup (PostgreSQL)
+**After first login - IMPORTANT:**
+1. Go to **Settings → Company & Invoice**
+2. Replace the default placeholders with YOUR business information:
+   - Company Name
+   - Address
+   - Phone
+   - Email
+   - Tax ID
+   - Payment Details
+3. Click **"Save Company Settings"**
+
+Now all your invoices will have YOUR business details! 🎉
+
+That's it! You're ready to create invoices offline.
+
+### Option 2: Production Setup (PostgreSQL - Also Works Offline)
 
 ```bash
 # 1. Install PostgreSQL

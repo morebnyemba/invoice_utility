@@ -1,6 +1,31 @@
 # Invoice Utility - Professional Business Management System
 
-A comprehensive, production-ready invoice and business management system built with Python and Streamlit. Designed for small to medium businesses with enterprise-grade features.
+A comprehensive, production-ready invoice and business management system built with Python and Streamlit. **Works 100% offline** - designed for small to medium businesses with enterprise-grade features.
+
+## ✈️ Offline-First Design
+
+**This application works completely without internet connection:**
+- ✅ All core features available offline
+- ✅ Data stored locally on your device
+- ✅ No external dependencies for core operations
+- ✅ Privacy-focused - no data sent anywhere
+- ⚠️ Email sending is the only feature that requires internet (optional)
+
+## 🎯 Quick Setup (5 minutes)
+
+1. **Install and run:**
+   ```bash
+   pip install -r requirements.txt
+   streamlit run app.py
+   ```
+
+2. **Configure YOUR business details:**
+   - Create admin account
+   - Go to Settings → Company & Invoice
+   - Replace default placeholders with your information
+   - Start invoicing!
+
+See `FIRST_TIME_SETUP.md` for detailed setup guide.
 
 ## 🚀 Key Features
 
