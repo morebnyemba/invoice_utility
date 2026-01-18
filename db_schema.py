@@ -132,6 +132,16 @@ def init_enhanced_schema():
             FOREIGN KEY (invoice_id) REFERENCES invoices (id) ON DELETE CASCADE
         )''')
         
+        # API Keys Table for REST API authentication
+        conn.execute('''CREATE TABLE IF NOT EXISTS api_keys (
+            key TEXT PRIMARY KEY,
+            description TEXT,
+            is_active INTEGER DEFAULT 1,
+            created_at TEXT NOT NULL,
+            created_by TEXT NOT NULL,
+            last_used TEXT
+        )''')
+        
         # Migration: Add new columns to existing tables
         try:
             conn.execute("SELECT role FROM users LIMIT 1")

@@ -1,6 +1,36 @@
 # Invoice Utility - Professional Business Management System
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen.svg)](https://github.com/morebnyemba/invoice_utility)
+
 A comprehensive, production-ready invoice and business management system built with Python and Streamlit. **Works 100% offline** - designed for small to medium businesses with enterprise-grade features.
+
+## 📜 Open Source & License
+
+This is **free and open source software** released under the [MIT License](LICENSE).
+
+**You are free to:**
+- ✅ Use commercially
+- ✅ Modify for your needs
+- ✅ Distribute copies
+- ✅ Use privately
+- ✅ Integrate with other systems
+
+**Only requirement:** Attribution - Include credit to the original author (Moreblessing Nyemba) and a link to this repository.
+
+## 🔌 REST API Support
+
+**NEW:** Full REST API for integration with external systems, ERP software, and custom applications.
+
+- ✅ Complete HTTP endpoints for all operations
+- ✅ JSON request/response format
+- ✅ API key authentication
+- ✅ Comprehensive documentation
+- ✅ Ready for ERP/accounting system integration
+- ✅ Support for automated workflows
+
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
 
 ## ✈️ Offline-First Design
 
@@ -62,6 +92,14 @@ See `FIRST_TIME_SETUP.md` for detailed setup guide.
 - Connection pooling for better performance
 - Automatic schema migrations
 
+### 🔌 API & Integration
+- **REST API** - Full HTTP API for external integrations
+- **JSON Format** - Standard request/response format
+- **API Authentication** - Secure API key-based auth
+- **ERP Integration** - Connect with accounting systems
+- **Custom Integrations** - Build your own tools on top
+- See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for details
+
 ### 📊 Reporting & Analytics
 - 💵 Revenue and expense tracking
 - 📉 Profit margin analysis
@@ -92,6 +130,19 @@ streamlit run app.py
 
 See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed database configuration.
 
+### API Server Setup
+
+```bash
+# Start the REST API server (in addition to Streamlit app)
+python api.py
+
+# Or with Gunicorn for production
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 api:app
+```
+
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
+
 ## 📋 Requirements
 
 ```
@@ -100,8 +151,10 @@ pandas>=1.5.0
 reportlab>=3.6.0
 plotly>=5.0.0
 bcrypt>=4.0.0
-psycopg2-binary>=2.9.0      # For PostgreSQL
-mysql-connector-python>=8.0.0  # For MySQL
+psycopg2-binary>=2.9.0          # For PostgreSQL
+mysql-connector-python>=8.0.0    # For MySQL
+flask>=2.3.0                     # For REST API
+pyjwt>=2.8.0                     # For API authentication
 ```
 
 ## ⚙️ Configuration
@@ -199,13 +252,21 @@ Configure in the application for subscription-based billing.
 
 ```
 invoice_utility/
-├── app.py                  # Main Streamlit application
-├── database.py             # Database abstraction layer
-├── db_schema.py            # Schema initialization and migrations
-├── business_logic.py       # Business features and logic
-├── requirements.txt        # Python dependencies
-├── DATABASE_SETUP.md       # Database configuration guide
-└── README.md              # This file
+├── app.py                   # Main Streamlit application
+├── api.py                   # REST API server
+├── database.py              # Database abstraction layer
+├── db_schema.py             # Schema initialization and migrations
+├── business_logic.py        # Business features and logic
+├── test_system.py           # Automated tests
+├── requirements.txt         # Python dependencies
+├── LICENSE                  # MIT License
+├── README.md                # This file
+├── API_DOCUMENTATION.md     # Complete API reference
+├── DATABASE_SETUP.md        # Database configuration guide
+├── QUICKSTART.md            # Quick start guide
+├── FIRST_TIME_SETUP.md      # First-time configuration
+├── OFFLINE_GUIDE.md         # Offline operation guide
+└── ENHANCEMENTS.md          # Enhancement details
 ```
 
 ### Database Schema
@@ -224,6 +285,7 @@ invoice_utility/
 - `recurring_invoices` - Subscription billing schedules
 - `audit_logs` - Activity tracking
 - `invoice_reminders` - Payment reminder history
+- `api_keys` - API authentication tokens
 
 ## 🔐 Security Features
 
@@ -312,28 +374,155 @@ invoice_utility/
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+This is **open source software** and contributions are welcome!
+
+### How to Contribute
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Contribution Guidelines
+
+- Follow existing code style
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass
+- Keep commits atomic and well-described
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+**MIT License with Attribution Requirement**
 
-## 📧 Support
+Copyright (c) 2026 Moreblessing Nyemba
 
-For issues, questions, or feature requests:
-- Open an issue on GitHub
-- Check the documentation
-- Review the DATABASE_SETUP.md guide
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for full details.
 
-## 🙏 Credits
+**TL;DR:** You can use this software for **any purpose** (personal, commercial, etc.), modify it, and distribute it. The only requirement is to **give credit** to the original author.
 
-Developed for Slyker Tech Web Services by Moreblessing Nyemba.
+### Using This Software
+
+When using this software:
+- ✅ Include the LICENSE file in your distribution
+- ✅ Credit the original author: Moreblessing Nyemba
+- ✅ Link back to: https://github.com/morebnyemba/invoice_utility
+
+**Example Attribution:**
+```
+Based on Invoice Utility by Moreblessing Nyemba
+https://github.com/morebnyemba/invoice_utility
+```
+
+## 🔌 API Integration Examples
+
+### ERP System Integration
+
+```python
+# Example: Sync invoices to external ERP
+import requests
+
+API_KEY = "your-api-key"
+API_URL = "http://localhost:5000/api/v1"
+
+# Get all unpaid invoices
+response = requests.get(
+    f"{API_URL}/invoices?status=unpaid",
+    headers={"X-API-Key": API_KEY}
+)
+
+for invoice in response.json()['data']:
+    # Send to external ERP system
+    sync_to_erp(invoice)
+```
+
+### Automated Reporting
+
+```python
+# Example: Daily revenue report
+from datetime import date, timedelta
+
+today = date.today()
+start_date = today - timedelta(days=30)
+
+response = requests.get(
+    f"{API_URL}/reports/summary",
+    params={"start_date": start_date, "end_date": today},
+    headers={"X-API-Key": API_KEY}
+)
+
+summary = response.json()['data']
+send_email_report(summary)
+```
+
+### Third-Party Payment Gateway
+
+```python
+# Example: Record payment from payment gateway webhook
+@app.route('/webhook/payment', methods=['POST'])
+def payment_webhook():
+    payment_data = request.json
+    
+    # Record in invoice system
+    requests.post(
+        f"{API_URL}/payments",
+        json={
+            "invoice_id": payment_data['invoice_id'],
+            "amount": payment_data['amount'],
+            "date": payment_data['date'],
+            "method": payment_data['gateway']
+        },
+        headers={"X-API-Key": API_KEY}
+    )
+    
+    return "OK", 200
+```
+
+## 📧 Support & Community
+
+### Getting Help
+
+- 📖 **Documentation**: Check README, QUICKSTART, and API_DOCUMENTATION
+- 🐛 **Issues**: [Report bugs on GitHub](https://github.com/morebnyemba/invoice_utility/issues)
+- 💡 **Feature Requests**: Open an issue with the "enhancement" label
+- 🔧 **Configuration**: See DATABASE_SETUP.md and FIRST_TIME_SETUP.md
+
+### Resources
+
+- [API Documentation](API_DOCUMENTATION.md) - Complete REST API reference
+- [Quick Start Guide](QUICKSTART.md) - Get started in 5 minutes
+- [Database Setup](DATABASE_SETUP.md) - PostgreSQL/MySQL configuration
+- [Offline Guide](OFFLINE_GUIDE.md) - Offline operation details
+- [First-Time Setup](FIRST_TIME_SETUP.md) - Initial configuration
+
+## 🙏 Credits & Acknowledgments
+
+**Developed by:** [Moreblessing Nyemba](https://github.com/morebnyemba)
+
+**Original Project:** Invoice Utility for Slyker Tech Web Services
+
+**Contributors:** Open to community contributions
+
+### Built With
+
+- [Streamlit](https://streamlit.io/) - Web UI framework
+- [Flask](https://flask.palletsprojects.com/) - REST API framework
+- [ReportLab](https://www.reportlab.com/) - PDF generation
+- [Plotly](https://plotly.com/) - Interactive charts
+- [bcrypt](https://github.com/pyca/bcrypt/) - Password hashing
+
+## 📊 Project Stats
+
+- **Language:** Python 3.8+
+- **License:** MIT with Attribution
+- **Type:** Open Source Business Software
+- **Status:** Production Ready ✅
+- **Maintenance:** Actively Maintained
+- **Tests:** Passing ✅
+- **Security:** No Known Vulnerabilities ✅
 
 ## 🔮 Roadmap
 
