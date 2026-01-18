@@ -1,5 +1,23 @@
-/invoice_149C35B7.pdf
-/invoice_2FD63490.pdf
-/invoice_D9619427.pdf
-/invoice_ST-4C75CB.pdf
-/invoice_ST-C3344E.pdf
+# Invoice PDFs
+/invoice_*.pdf
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database backups
+backup_*.db
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
