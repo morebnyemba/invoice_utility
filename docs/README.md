@@ -134,14 +134,14 @@ See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed database configuration.
 
 ```bash
 # Start the REST API server (in addition to Streamlit app)
-python run_api.py
+python api.py
 
 # Or with Gunicorn for production
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 src.api.api:app
+gunicorn -w 4 -b 0.0.0.0:5000 api:app
 ```
 
-See [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for complete API reference.
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
 
 ## 📋 Requirements
 
@@ -252,38 +252,21 @@ Configure in the application for subscription-based billing.
 
 ```
 invoice_utility/
-├── app.py                      # Main Streamlit application entry point
-├── run_api.py                  # REST API server entry point
-├── requirements.txt            # Python dependencies
-├── LICENSE                     # MIT License
-├── README.md                   # This file
-├── .env.example                # Configuration template
-├── .gitignore                  # Git ignore rules
-├── src/                        # Source code directory
-│   ├── __init__.py
-│   ├── models/                 # Database layer
-│   │   ├── __init__.py
-│   │   ├── database.py         # Database abstraction layer
-│   │   └── db_schema.py        # Schema initialization and migrations
-│   ├── business/               # Business logic layer
-│   │   ├── __init__.py
-│   │   └── business_logic.py   # Business features and logic
-│   ├── api/                    # REST API layer
-│   │   ├── __init__.py
-│   │   └── api.py              # Flask API endpoints
-│   └── utils/                  # Utility functions
-│       └── __init__.py
-├── tests/                      # Test suite
-│   ├── __init__.py
-│   └── test_system.py          # System integration tests
-└── docs/                       # Documentation
-    ├── README.md               # Detailed README
-    ├── API_DOCUMENTATION.md    # Complete API reference
-    ├── DATABASE_SETUP.md       # Database configuration guide
-    ├── QUICKSTART.md           # Quick start guide
-    ├── FIRST_TIME_SETUP.md     # First-time configuration
-    ├── OFFLINE_GUIDE.md        # Offline operation guide
-    └── ENHANCEMENTS.md         # Enhancement details
+├── app.py                   # Main Streamlit application
+├── api.py                   # REST API server
+├── database.py              # Database abstraction layer
+├── db_schema.py             # Schema initialization and migrations
+├── business_logic.py        # Business features and logic
+├── test_system.py           # Automated tests
+├── requirements.txt         # Python dependencies
+├── LICENSE                  # MIT License
+├── README.md                # This file
+├── API_DOCUMENTATION.md     # Complete API reference
+├── DATABASE_SETUP.md        # Database configuration guide
+├── QUICKSTART.md            # Quick start guide
+├── FIRST_TIME_SETUP.md      # First-time configuration
+├── OFFLINE_GUIDE.md         # Offline operation guide
+└── ENHANCEMENTS.md          # Enhancement details
 ```
 
 ### Database Schema
