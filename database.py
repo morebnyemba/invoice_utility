@@ -60,7 +60,7 @@ def init_connection_pool():
     if db_config.db_type == "postgresql" and POSTGRESQL_AVAILABLE:
         _connection_pool = psycopg2.pool.SimpleConnectionPool(
             1,
-            db_config.pool_size,
+            db_config.pool_size + db_config.max_overflow,
             host=db_config.db_host,
             port=db_config.db_port,
             database=db_config.db_database,

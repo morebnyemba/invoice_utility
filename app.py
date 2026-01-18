@@ -692,23 +692,23 @@ def page_invoice_dashboard():
                 for payment in payments:
                     st.write(f"- ${payment['amount']:,.2f} on {payment['date']} via {payment['method']}")
             
-            b_col1, b_col2, b_col3, b_col4, b_col5, b_col6 = st.columns(6)
+            btn_pdf, btn_mark, btn_delete, btn_payment, btn_share, btn_email = st.columns(6)
             pdf_file = generate_invoice_pdf(inv, settings)
             with open(pdf_file, "rb") as file: 
-                b_col1.download_button("📄 PDF", file, pdf_file, "application/pdf", key=f"pdf_{inv['id']}")
+                btn_pdf.download_button("📄 PDF", file, pdf_file, "application/pdf", key=f"pdf_{inv['id']}")
             
             with get_db_connection() as conn:
                 if inv['status'] == 'unpaid':
-                    if b_col2.button("Mark Paid", key=f"paid_{inv['id']}", type="primary"): 
+                    if btn_mark.button("Mark Paid", key=f"paid_{inv['id']}", type="primary"): 
                         conn.execute("UPDATE invoices SET status='paid' WHERE id=?", (inv['id'],)); conn.commit(); st.rerun()
                 else:
-                    if b_col2.button("Mark Unpaid", key=f"unpaid_{inv['id']}"): 
+                    if btn_mark.button("Mark Unpaid", key=f"unpaid_{inv['id']}"): 
                         conn.execute("UPDATE invoices SET status='unpaid' WHERE id=?", (inv['id'],)); conn.commit(); st.rerun()
                 
-                if b_col3.button("🗑️ Delete", key=f"del_inv_{inv['id']}"): 
+                if btn_delete.button("🗑️ Delete", key=f"del_inv_{inv['id']}"): 
                     conn.execute("DELETE FROM invoices WHERE id=?", (inv['id'],)); conn.commit(); st.rerun()
                 
-                if b_col4.button("💰 Record Payment", key=f"pay_{inv['id']}"):
+                if btn_payment.button("💰 Record Payment", key=f"pay_{inv['id']}"):
                     with st.form(key=f"payment_form_{inv['id']}"):
                         st.subheader("Record Payment")
                         amount = st.number_input("Amount", min_value=0.0, max_value=float(inv['total']), key=f"amount_{inv['id']}")
@@ -720,7 +720,7 @@ def page_invoice_dashboard():
                             st.success("Payment recorded!")
                             st.rerun()
                 
-                if b_col5.button("🔗 Share", key=f"share_{inv['id']}"):
+                if btn_share.button("🔗 Share", key=f"share_{inv['id']}"):
                     token = secrets.token_urlsafe(16)
                     expiry = (datetime.datetime.now() + datetime.timedelta(days=30)).isoformat()
                     created_at = datetime.datetime.now().isoformat()
@@ -730,7 +730,7 @@ def page_invoice_dashboard():
                     share_link = f"{st.get_option('server.baseUrlPath')}?invoice_id={inv['id']}&token={token}"
                     st.code(share_link, language="bash", line_numbers=False); st.info("Link is valid for 30 days. Click the icon above to copy.")
                 
-                if b_col6.button("📧 Send Email", key=f"email_{inv['id']}"):
+                if btn_email.button("📧 Send Email", key=f"email_{inv['id']}"):
                     if inv['email']:
                         if send_invoice_email(inv, settings, inv['email']):
                             st.success(f"Invoice sent to {inv['email']}")

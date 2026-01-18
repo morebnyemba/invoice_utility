@@ -300,18 +300,37 @@ class InvoiceReminder:
     @staticmethod
     def get_overdue_invoices(conn, days_overdue: int = 7):
         """Get invoices that are overdue by specified days"""
-        cutoff_date = (
-            datetime.date.today() - datetime.timedelta(days=days_overdue)
-        ).strftime('%d %B %Y')
+        from datetime import datetime, timedelta
         
-        return conn.execute(
+        # Calculate cutoff date
+        cutoff_date = datetime.now() - timedelta(days=days_overdue)
+        
+        # Get all unpaid invoices
+        invoices = conn.execute(
             """SELECT i.*, c.name, c.email 
                FROM invoices i
                JOIN clients c ON i.client_id = c.id
-               WHERE i.status = 'unpaid' 
-               AND i.date <= ?""",
-            (cutoff_date,)
+               WHERE i.status = 'unpaid'"""
         ).fetchall()
+        
+        # Filter by date - handle both date formats
+        overdue = []
+        for inv in invoices:
+            try:
+                # Try parsing as '%d %B %Y' format first
+                inv_date = datetime.strptime(inv['date'], '%d %B %Y')
+            except (ValueError, TypeError):
+                try:
+                    # Try ISO format
+                    inv_date = datetime.fromisoformat(inv['date'])
+                except (ValueError, TypeError):
+                    # Skip invoices with invalid dates
+                    continue
+            
+            if inv_date.date() <= cutoff_date.date():
+                overdue.append(inv)
+        
+        return overdue
     
     @staticmethod
     def create_reminder(conn, invoice_id: str, reminder_type: str, sent_date: str):
