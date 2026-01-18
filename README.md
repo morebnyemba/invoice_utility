@@ -3,8 +3,18 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen.svg)](https://github.com/morebnyemba/invoice_utility)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](CHANGELOG.md)
 
 A comprehensive, production-ready invoice and business management system built with Python and Streamlit. **Works 100% offline** - designed for small to medium businesses with enterprise-grade features.
+
+## 🎉 What's New in v2.1.0
+
+- 📦 **Bulk Operations** - Create, update, or delete multiple invoices at once
+- 📊 **Advanced Analytics** - Revenue forecasting and predictive insights
+- 🤖 **Automated Scheduler** - Automatic recurring invoice generation
+- 📁 **Organized Code** - Clean folder structure for better maintainability
+
+See [CHANGELOG.md](CHANGELOG.md) for full details and [docs/NEW_FEATURES.md](docs/NEW_FEATURES.md) for documentation.
 
 ## 📜 Open Source & License
 
@@ -30,7 +40,7 @@ This is **free and open source software** released under the [MIT License](LICEN
 - ✅ Ready for ERP/accounting system integration
 - ✅ Support for automated workflows
 
-See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
+See [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for complete API reference.
 
 ## ✈️ Offline-First Design
 
@@ -55,7 +65,7 @@ See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
    - Replace default placeholders with your information
    - Start invoicing!
 
-See `FIRST_TIME_SETUP.md` for detailed setup guide.
+See [docs/FIRST_TIME_SETUP.md](docs/FIRST_TIME_SETUP.md) for detailed setup guide.
 
 ## 🚀 Key Features
 
@@ -516,15 +526,25 @@ def payment_webhook():
 - 📖 **Documentation**: Check README, QUICKSTART, and API_DOCUMENTATION
 - 🐛 **Issues**: [Report bugs on GitHub](https://github.com/morebnyemba/invoice_utility/issues)
 - 💡 **Feature Requests**: Open an issue with the "enhancement" label
-- 🔧 **Configuration**: See DATABASE_SETUP.md and FIRST_TIME_SETUP.md
+- 🔧 **Configuration**: See docs/DATABASE_SETUP.md and docs/FIRST_TIME_SETUP.md
 
-### Resources
+### 📚 Documentation
 
-- [API Documentation](API_DOCUMENTATION.md) - Complete REST API reference
-- [Quick Start Guide](QUICKSTART.md) - Get started in 5 minutes
-- [Database Setup](DATABASE_SETUP.md) - PostgreSQL/MySQL configuration
-- [Offline Guide](OFFLINE_GUIDE.md) - Offline operation details
-- [First-Time Setup](FIRST_TIME_SETUP.md) - Initial configuration
+#### Getting Started
+- [Quick Start Guide](docs/QUICKSTART.md) - Get started in 5 minutes
+- [First-Time Setup](docs/FIRST_TIME_SETUP.md) - Initial configuration guide
+- [Migration Guide](docs/MIGRATION_GUIDE.md) - Upgrade from older versions
+
+#### Features & Usage
+- [NEW FEATURES](docs/NEW_FEATURES.md) - Complete guide to v2.1.0 features ⭐
+- [API Documentation](docs/API_DOCUMENTATION.md) - Complete REST API reference
+- [Database Setup](docs/DATABASE_SETUP.md) - PostgreSQL/MySQL configuration
+- [Offline Guide](docs/OFFLINE_GUIDE.md) - Offline operation details
+
+#### Technical Documentation
+- [CHANGELOG](CHANGELOG.md) - Version history and changes
+- [Enhancements](docs/ENHANCEMENTS.md) - Technical enhancement details
+- [Architecture](docs/README.md) - Detailed architecture documentation
 
 ## 🙏 Credits & Acknowledgments
 
@@ -544,6 +564,7 @@ def payment_webhook():
 
 ## 📊 Project Stats
 
+- **Version:** 2.1.0
 - **Language:** Python 3.8+
 - **License:** MIT with Attribution
 - **Type:** Open Source Business Software
