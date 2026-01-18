@@ -24,6 +24,18 @@ from email.mime.application import MIMEApplication
 import bcrypt
 import json
 
+# Import enhanced database and business logic modules
+try:
+    from database import get_db_connection as get_db_conn_new, get_db_type, is_sqlite
+    from db_schema import init_enhanced_schema, add_default_tax_settings, check_database_health
+    from business_logic import (
+        InvoiceTemplate, RecurringInvoice, TaxCalculator, CurrencyConverter,
+        AuditLog, RoleManager, InvoiceReminder, BusinessAnalytics
+    )
+    USE_ENHANCED_FEATURES = True
+except ImportError:
+    USE_ENHANCED_FEATURES = False
+
 # ---------- CONFIGURATION ----------
 import os
 from dataclasses import dataclass
@@ -91,6 +103,19 @@ def sanitize_input(text):
 @contextmanager
 def get_db_connection():
     """Context manager for database connections with error handling"""
+    # Use enhanced database connection if available
+    if USE_ENHANCED_FEATURES:
+        try:
+            with get_db_conn_new() as conn:
+                yield conn
+            return
+        except Exception as e:
+            st.error(f"Enhanced database error: {e}")
+            if config.DEBUG:
+                st.error(f"Detailed error: {str(e)}")
+            # Fall back to SQLite
+    
+    # Fallback to original SQLite connection
     conn = None
     try:
         conn = sqlite3.connect(DB_NAME, check_same_thread=False)
@@ -108,6 +133,17 @@ def get_db_connection():
 
 def init_db():
     """Initializes the database schema."""
+    # Use enhanced schema if available
+    if USE_ENHANCED_FEATURES:
+        try:
+            init_enhanced_schema()
+            with get_db_connection() as conn:
+                add_default_tax_settings(conn)
+            return
+        except Exception as e:
+            st.warning(f"Could not initialize enhanced schema: {e}. Using basic schema.")
+    
+    # Original schema initialization
     with get_db_connection() as conn:
         cursor = conn.cursor()
         # Users Table
@@ -151,7 +187,6 @@ def check_and_set_default_settings():
         "COMPANY_PHONE": "+263787211325",
         "COMPANY_EMAIL": "info@slykertech.co.zw",
         "COMPANY_TIN": "TIN: 1001672571",
-        "BANK_DETAILS": "<b>Payment Details:</b><br/>Ecocash: +263787211325 (Moreblessing Nyemba)<br/>Innbucks: +263787211325 (Moreblessing Nyemba)<br/>Omari: +263787211325 (Moreblessing Nyemba)<br/>"
         "BANK_DETAILS": "<b>Payment Details:</b><br/>Ecocash: +263787211325 (Moreblessing Nyemba)<br/>Innbucks: +263787211325 (Moreblessing Nyemba)<br/>Omari: +263787211325 (Moreblessing Nyemba)<br/>",
         "SMTP_SERVER": "",
         "SMTP_PORT": "465",
@@ -657,7 +692,6 @@ def page_invoice_dashboard():
                 for payment in payments:
                     st.write(f"- ${payment['amount']:,.2f} on {payment['date']} via {payment['method']}")
             
-            b_col1, b_col2, b_col3, b_col4, b_col5 = st.columns(5)
             b_col1, b_col2, b_col3, b_col4, b_col5, b_col6 = st.columns(6)
             pdf_file = generate_invoice_pdf(inv, settings)
             with open(pdf_file, "rb") as file: 
@@ -753,26 +787,20 @@ def page_manage_projects():
             with st.form(key=f"edit_proj_{proj['id']}"):
                 st.write(f"**Budget:** ${proj['budget']:,.2f}")
                 st.write(f"**Description:** {proj['description']}")
-                description = st.text_area("Description", value=proj['description'], key=f"desc_{proj['id']}")
                 st.markdown("---")
                 st.subheader("Edit Project")
                 name = st.text_input("Project Name", value=proj['name'], key=f"name_{proj['id']}")
                 budget = st.number_input("Budget (USD)", value=proj['budget'], min_value=0.0, step=100.0, key=f"budget_{proj['id']}")
                 status = st.selectbox("Status", PROJECT_STATUSES, index=PROJECT_STATUSES.index(proj['status']), key=f"status_{proj['id']}")
-                
-                col1, col2 = st.columns([1,1])
-                submitted_edit = col1.form_submit_button("Update Project", type="primary")
-                submitted_delete = col2.form_submit_button("🗑️ Delete Project")
+                description = st.text_area("Description", value=proj['description'], key=f"desc_{proj['id']}")
                 
                 submitted_edit = st.form_submit_button("Update Project", type="primary")
                 if submitted_edit:
                     with get_db_connection() as conn:
-                        conn.execute("UPDATE projects SET name=?, budget=?, status=? WHERE id=?", (sanitize_input(name), budget, status, proj['id']))
-                        conn.execute("UPDATE projects SET name=?, budget=?, status=?, description=? WHERE id=?", (sanitize_input(name), budget, status, sanitize_input(description), proj['id']))
+                        conn.execute("UPDATE projects SET name=?, budget=?, status=?, description=? WHERE id=?", 
+                                   (sanitize_input(name), budget, status, sanitize_input(description), proj['id']))
                         conn.commit()
                     st.rerun()
-                
-                if submitted_delete:
             
             # Delete button outside the form
             st.error("Danger Zone")
@@ -963,11 +991,9 @@ def page_settings():
     st.header("⚙️ Application Settings")
     settings = fetch_settings()
     
-    tab1, tab2 = st.tabs(["Company Settings", "Security & Backup"])
-    tab1, tab2, tab3 = st.tabs(["🏢 Company & Invoice", "📧 Email (SMTP)", "🔒 Security & Backup"])
+    tab1, tab2, tab3, tab4 = st.tabs(["🏢 Company & Invoice", "📧 Email (SMTP)", "💰 Tax & Currency", "🔒 Database & Security"])
     
     with tab1:
-        with st.form("settings_form"):
         with st.form("company_settings_form"):
             st.subheader("Company Information")
             company_name = st.text_input("Company Name", settings.get("COMPANY_NAME", ""))
@@ -977,7 +1003,6 @@ def page_settings():
             company_tin = st.text_input("TIN", settings.get("COMPANY_TIN", ""))
             st.subheader("Payment Details")
             bank_details = st.text_area("Payment Details (HTML)", settings.get("BANK_DETAILS", ""), height=150)
-            if st.form_submit_button("Save Settings", type="primary"):
             if st.form_submit_button("Save Company Settings", type="primary"):
                 updated_settings = {
                     "COMPANY_NAME": sanitize_input(company_name),
@@ -1025,24 +1050,104 @@ def page_settings():
                     conn.commit()
                 st.success("Email settings saved!")
                 st.rerun()
-
+    
     with tab3:
+        st.subheader("Tax Configuration")
+        if USE_ENHANCED_FEATURES:
+            with st.form("tax_settings_form"):
+                tax_enabled = st.checkbox("Enable Tax Calculation", value=settings.get("TAX_ENABLED", "false") == "true")
+                tax_type = st.selectbox("Tax Type", ["VAT", "GST", "Sales Tax", "Other"], 
+                                       index=["VAT", "GST", "Sales Tax", "Other"].index(settings.get("TAX_TYPE", "VAT")))
+                tax_rate = st.number_input("Tax Rate (%)", value=float(settings.get("TAX_RATE", "15")), min_value=0.0, max_value=100.0, step=0.1)
+                tax_number = st.text_input("Tax Registration Number", settings.get("TAX_NUMBER", ""))
+                
+                if st.form_submit_button("Save Tax Settings", type="primary"):
+                    with get_db_connection() as conn:
+                        conn.execute("UPDATE settings SET value=? WHERE key=?", ("true" if tax_enabled else "false", "TAX_ENABLED"))
+                        conn.execute("UPDATE settings SET value=? WHERE key=?", (tax_type, "TAX_TYPE"))
+                        conn.execute("UPDATE settings SET value=? WHERE key=?", (str(tax_rate), "TAX_RATE"))
+                        conn.execute("UPDATE settings SET value=? WHERE key=?", (tax_number, "TAX_NUMBER"))
+                        conn.commit()
+                    st.success("Tax settings saved!")
+                    st.rerun()
+        else:
+            st.info("Enhanced tax features require additional modules. Install dependencies to enable.")
+        
+        st.markdown("---")
+        st.subheader("Currency Configuration")
+        st.info("Default currency for invoices: USD. Multi-currency support available with enhanced features.")
+
+    with tab4:
+        st.subheader("Database Configuration")
+        
+        # Show current database info
+        if USE_ENHANCED_FEATURES:
+            db_type = get_db_type()
+            st.info(f"**Current Database:** {db_type.upper()}")
+            
+            # Database health check
+            if st.button("Check Database Health"):
+                health, message = check_database_health()
+                if health:
+                    st.success(message)
+                else:
+                    st.error(message)
+            
+            st.markdown("---")
+            st.subheader("Database Configuration Guide")
+            st.markdown("""
+            Configure your database using environment variables:
+            
+            **SQLite (Default):**
+            ```bash
+            DB_TYPE=sqlite
+            DB_NAME=invoices.db
+            ```
+            
+            **PostgreSQL:**
+            ```bash
+            DB_TYPE=postgresql
+            DB_HOST=localhost
+            DB_PORT=5432
+            DB_USER=your_user
+            DB_PASSWORD=your_password
+            DB_DATABASE=invoice_db
+            ```
+            
+            **MySQL:**
+            ```bash
+            DB_TYPE=mysql
+            DB_HOST=localhost
+            DB_PORT=3306
+            DB_USER=your_user
+            DB_PASSWORD=your_password
+            DB_DATABASE=invoice_db
+            ```
+            """)
+        else:
+            st.info("Using SQLite database (default). Install enhanced modules for PostgreSQL/MySQL support.")
+        
+        st.markdown("---")
         st.subheader("Database Backup")
         st.info("Create a backup of your entire database for safekeeping.")
         
         if st.button("Create Database Backup", type="primary"):
-            with st.spinner("Creating backup..."):
-                backup_file = export_database_backup()
-                with open(backup_file, "rb") as f:
-                    st.download_button(
-                        "📥 Download Database Backup",
-                        f,
-                        file_name=backup_file,
-                        mime="application/x-sqlite3"
-                    )
-                # Clean up
-                os.remove(backup_file)
+            if USE_ENHANCED_FEATURES and not is_sqlite():
+                st.warning("Backup is currently only supported for SQLite databases.")
+            else:
+                with st.spinner("Creating backup..."):
+                    backup_file = export_database_backup()
+                    with open(backup_file, "rb") as f:
+                        st.download_button(
+                            "📥 Download Database Backup",
+                            f,
+                            file_name=backup_file,
+                            mime="application/x-sqlite3"
+                        )
+                    # Clean up
+                    os.remove(backup_file)
         
+        st.markdown("---")
         st.subheader("Session Management")
         if st.button("Refresh Session"):
             st.session_state.login_time = time.time()
