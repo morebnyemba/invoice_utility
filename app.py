@@ -26,9 +26,9 @@ import json
 
 # Import enhanced database and business logic modules
 try:
-    from database import get_db_connection as get_db_conn_new, get_db_type, is_sqlite
-    from db_schema import init_enhanced_schema, add_default_tax_settings, check_database_health
-    from business_logic import (
+    from src.models.database import get_db_connection as get_db_conn_new, get_db_type, is_sqlite
+    from src.models.db_schema import init_enhanced_schema, add_default_tax_settings, check_database_health
+    from src.business.business_logic import (
         InvoiceTemplate, RecurringInvoice, TaxCalculator, CurrencyConverter,
         AuditLog, RoleManager, InvoiceReminder, BusinessAnalytics
     )

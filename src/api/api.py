@@ -12,8 +12,8 @@ import io
 
 # Import database and business logic
 try:
-    from database import get_db_connection
-    from business_logic import TaxCalculator, CurrencyConverter
+    from src.models.database import get_db_connection
+    from src.business.business_logic import TaxCalculator, CurrencyConverter
 except ImportError:
     print("Warning: Database or business_logic modules not available")
 

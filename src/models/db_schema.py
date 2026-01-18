@@ -1,7 +1,7 @@
 """
 Database schema initialization and migration utilities
 """
-from database import get_db_connection, is_sqlite
+from .database import get_db_connection, is_sqlite
 import sqlite3
 
 

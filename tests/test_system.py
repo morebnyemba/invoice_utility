@@ -5,25 +5,28 @@ Test script to verify database connectivity and modules
 import sys
 import os
 
+# Add the parent directory to the path so we can import from src
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 def test_imports():
     """Test that all modules can be imported"""
     print("Testing module imports...")
     try:
-        import database
+        from src.models import database
         print("✓ database module imported")
     except ImportError as e:
         print(f"✗ Failed to import database: {e}")
         return False
     
     try:
-        import db_schema
+        from src.models import db_schema
         print("✓ db_schema module imported")
     except ImportError as e:
         print(f"✗ Failed to import db_schema: {e}")
         return False
     
     try:
-        import business_logic
+        from src.business import business_logic
         print("✓ business_logic module imported")
     except ImportError as e:
         print(f"✗ Failed to import business_logic: {e}")
@@ -35,8 +38,8 @@ def test_database_connection():
     """Test database connection"""
     print("\nTesting database connection...")
     try:
-        from database import get_db_connection, get_db_type
-        from db_schema import check_database_health
+        from src.models.database import get_db_connection, get_db_type
+        from src.models.db_schema import check_database_health
         
         db_type = get_db_type()
         print(f"✓ Database type: {db_type}")
@@ -61,7 +64,7 @@ def test_business_logic():
     """Test business logic modules"""
     print("\nTesting business logic modules...")
     try:
-        from business_logic import (
+        from src.business.business_logic import (
             TaxCalculator, CurrencyConverter, InvoiceTemplate,
             RecurringInvoice, RoleManager
         )

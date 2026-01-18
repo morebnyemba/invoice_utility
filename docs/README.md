@@ -3,18 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen.svg)](https://github.com/morebnyemba/invoice_utility)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](CHANGELOG.md)
 
 A comprehensive, production-ready invoice and business management system built with Python and Streamlit. **Works 100% offline** - designed for small to medium businesses with enterprise-grade features.
-
-## 🎉 What's New in v2.1.0
-
-- 📦 **Bulk Operations** - Create, update, or delete multiple invoices at once
-- 📊 **Advanced Analytics** - Revenue forecasting and predictive insights
-- 🤖 **Automated Scheduler** - Automatic recurring invoice generation
-- 📁 **Organized Code** - Clean folder structure for better maintainability
-
-See [CHANGELOG.md](CHANGELOG.md) for full details and [docs/NEW_FEATURES.md](docs/NEW_FEATURES.md) for documentation.
 
 ## 📜 Open Source & License
 
@@ -40,7 +30,7 @@ This is **free and open source software** released under the [MIT License](LICEN
 - ✅ Ready for ERP/accounting system integration
 - ✅ Support for automated workflows
 
-See [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for complete API reference.
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
 
 ## ✈️ Offline-First Design
 
@@ -65,7 +55,7 @@ See [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for complete API refe
    - Replace default placeholders with your information
    - Start invoicing!
 
-See [docs/FIRST_TIME_SETUP.md](docs/FIRST_TIME_SETUP.md) for detailed setup guide.
+See `FIRST_TIME_SETUP.md` for detailed setup guide.
 
 ## 🚀 Key Features
 
@@ -120,17 +110,6 @@ See [docs/FIRST_TIME_SETUP.md](docs/FIRST_TIME_SETUP.md) for detailed setup guid
 - 💾 Data export (CSV)
 - 🔄 Database backup and restore
 
-### 🆕 Advanced Features (NEW!)
-- 📦 **Bulk Operations** - Create, update, or delete multiple invoices at once
-- 📊 **Advanced Reporting** - Revenue trends, predictive analytics, expense breakdowns
-- 🤖 **Automated Scheduler** - Automatic recurring invoice generation
-- 📧 **Notification System** - Automated email notifications for generated invoices
-- 📈 **Predictive Analytics** - Revenue forecasting based on historical data
-- 📉 **Client Performance Metrics** - Detailed client analysis and lifetime value
-- 🎯 **Project Profitability** - In-depth project profitability analysis
-- ⏰ **Invoice Aging Reports** - Track overdue invoices by age brackets
-- 🔄 Database backup and restore
-
 ## 🛠️ Installation
 
 ### Quick Start (SQLite)
@@ -155,14 +134,14 @@ See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed database configuration.
 
 ```bash
 # Start the REST API server (in addition to Streamlit app)
-python run_api.py
+python api.py
 
 # Or with Gunicorn for production
 pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 src.api.api:app
+gunicorn -w 4 -b 0.0.0.0:5000 api:app
 ```
 
-See [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) for complete API reference.
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference.
 
 ## 📋 Requirements
 
@@ -273,38 +252,21 @@ Configure in the application for subscription-based billing.
 
 ```
 invoice_utility/
-├── app.py                      # Main Streamlit application entry point
-├── run_api.py                  # REST API server entry point
-├── requirements.txt            # Python dependencies
-├── LICENSE                     # MIT License
-├── README.md                   # This file
-├── .env.example                # Configuration template
-├── .gitignore                  # Git ignore rules
-├── src/                        # Source code directory
-│   ├── __init__.py
-│   ├── models/                 # Database layer
-│   │   ├── __init__.py
-│   │   ├── database.py         # Database abstraction layer
-│   │   └── db_schema.py        # Schema initialization and migrations
-│   ├── business/               # Business logic layer
-│   │   ├── __init__.py
-│   │   └── business_logic.py   # Business features and logic
-│   ├── api/                    # REST API layer
-│   │   ├── __init__.py
-│   │   └── api.py              # Flask API endpoints
-│   └── utils/                  # Utility functions
-│       └── __init__.py
-├── tests/                      # Test suite
-│   ├── __init__.py
-│   └── test_system.py          # System integration tests
-└── docs/                       # Documentation
-    ├── README.md               # Detailed README
-    ├── API_DOCUMENTATION.md    # Complete API reference
-    ├── DATABASE_SETUP.md       # Database configuration guide
-    ├── QUICKSTART.md           # Quick start guide
-    ├── FIRST_TIME_SETUP.md     # First-time configuration
-    ├── OFFLINE_GUIDE.md        # Offline operation guide
-    └── ENHANCEMENTS.md         # Enhancement details
+├── app.py                   # Main Streamlit application
+├── api.py                   # REST API server
+├── database.py              # Database abstraction layer
+├── db_schema.py             # Schema initialization and migrations
+├── business_logic.py        # Business features and logic
+├── test_system.py           # Automated tests
+├── requirements.txt         # Python dependencies
+├── LICENSE                  # MIT License
+├── README.md                # This file
+├── API_DOCUMENTATION.md     # Complete API reference
+├── DATABASE_SETUP.md        # Database configuration guide
+├── QUICKSTART.md            # Quick start guide
+├── FIRST_TIME_SETUP.md      # First-time configuration
+├── OFFLINE_GUIDE.md         # Offline operation guide
+└── ENHANCEMENTS.md          # Enhancement details
 ```
 
 ### Database Schema
@@ -526,25 +488,15 @@ def payment_webhook():
 - 📖 **Documentation**: Check README, QUICKSTART, and API_DOCUMENTATION
 - 🐛 **Issues**: [Report bugs on GitHub](https://github.com/morebnyemba/invoice_utility/issues)
 - 💡 **Feature Requests**: Open an issue with the "enhancement" label
-- 🔧 **Configuration**: See docs/DATABASE_SETUP.md and docs/FIRST_TIME_SETUP.md
+- 🔧 **Configuration**: See DATABASE_SETUP.md and FIRST_TIME_SETUP.md
 
-### 📚 Documentation
+### Resources
 
-#### Getting Started
-- [Quick Start Guide](docs/QUICKSTART.md) - Get started in 5 minutes
-- [First-Time Setup](docs/FIRST_TIME_SETUP.md) - Initial configuration guide
-- [Migration Guide](docs/MIGRATION_GUIDE.md) - Upgrade from older versions
-
-#### Features & Usage
-- [NEW FEATURES](docs/NEW_FEATURES.md) - Complete guide to v2.1.0 features ⭐
-- [API Documentation](docs/API_DOCUMENTATION.md) - Complete REST API reference
-- [Database Setup](docs/DATABASE_SETUP.md) - PostgreSQL/MySQL configuration
-- [Offline Guide](docs/OFFLINE_GUIDE.md) - Offline operation details
-
-#### Technical Documentation
-- [CHANGELOG](CHANGELOG.md) - Version history and changes
-- [Enhancements](docs/ENHANCEMENTS.md) - Technical enhancement details
-- [Architecture](docs/README.md) - Detailed architecture documentation
+- [API Documentation](API_DOCUMENTATION.md) - Complete REST API reference
+- [Quick Start Guide](QUICKSTART.md) - Get started in 5 minutes
+- [Database Setup](DATABASE_SETUP.md) - PostgreSQL/MySQL configuration
+- [Offline Guide](OFFLINE_GUIDE.md) - Offline operation details
+- [First-Time Setup](FIRST_TIME_SETUP.md) - Initial configuration
 
 ## 🙏 Credits & Acknowledgments
 
@@ -564,7 +516,6 @@ def payment_webhook():
 
 ## 📊 Project Stats
 
-- **Version:** 2.1.0
 - **Language:** Python 3.8+
 - **License:** MIT with Attribution
 - **Type:** Open Source Business Software
@@ -575,15 +526,15 @@ def payment_webhook():
 
 ## 🔮 Roadmap
 
-- [x] REST API for integrations ✅
-- [x] Bulk invoice operations ✅
-- [x] Advanced reporting dashboards ✅
-- [x] Automated invoice generation from recurring schedules ✅
+- [ ] REST API for integrations
 - [ ] Mobile responsive design improvements
+- [ ] Bulk invoice operations
+- [ ] Advanced reporting dashboards
 - [ ] Integration with payment gateways
 - [ ] Multi-language support
-- [ ] Invoice customization templates (UI)
+- [ ] Invoice customization templates
 - [ ] Client portal access
+- [ ] Automated invoice generation from recurring schedules
 - [ ] SMS notifications
 
 ---
