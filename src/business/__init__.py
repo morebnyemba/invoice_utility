@@ -11,6 +11,13 @@ from .business_logic import (
     InvoiceReminder,
     BusinessAnalytics
 )
+from .bulk_operations import (
+    BulkInvoiceOperations,
+    BulkClientOperations,
+    BulkReporting
+)
+from .advanced_reporting import AdvancedReporting
+from .scheduler import InvoiceScheduler, NotificationManager
 
 __all__ = [
     'InvoiceTemplate',
@@ -20,5 +27,11 @@ __all__ = [
     'RoleManager',
     'AuditLog',
     'InvoiceReminder',
-    'BusinessAnalytics'
+    'BusinessAnalytics',
+    'BulkInvoiceOperations',
+    'BulkClientOperations',
+    'BulkReporting',
+    'AdvancedReporting',
+    'InvoiceScheduler',
+    'NotificationManager'
 ]

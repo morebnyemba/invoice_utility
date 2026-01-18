@@ -110,6 +110,17 @@ See `FIRST_TIME_SETUP.md` for detailed setup guide.
 - 💾 Data export (CSV)
 - 🔄 Database backup and restore
 
+### 🆕 Advanced Features (NEW!)
+- 📦 **Bulk Operations** - Create, update, or delete multiple invoices at once
+- 📊 **Advanced Reporting** - Revenue trends, predictive analytics, expense breakdowns
+- 🤖 **Automated Scheduler** - Automatic recurring invoice generation
+- 📧 **Notification System** - Automated email notifications for generated invoices
+- 📈 **Predictive Analytics** - Revenue forecasting based on historical data
+- 📉 **Client Performance Metrics** - Detailed client analysis and lifetime value
+- 🎯 **Project Profitability** - In-depth project profitability analysis
+- ⏰ **Invoice Aging Reports** - Track overdue invoices by age brackets
+- 🔄 Database backup and restore
+
 ## 🛠️ Installation
 
 ### Quick Start (SQLite)
@@ -543,15 +554,15 @@ def payment_webhook():
 
 ## 🔮 Roadmap
 
-- [ ] REST API for integrations
+- [x] REST API for integrations ✅
+- [x] Bulk invoice operations ✅
+- [x] Advanced reporting dashboards ✅
+- [x] Automated invoice generation from recurring schedules ✅
 - [ ] Mobile responsive design improvements
-- [ ] Bulk invoice operations
-- [ ] Advanced reporting dashboards
 - [ ] Integration with payment gateways
 - [ ] Multi-language support
-- [ ] Invoice customization templates
+- [ ] Invoice customization templates (UI)
 - [ ] Client portal access
-- [ ] Automated invoice generation from recurring schedules
 - [ ] SMS notifications
 
 ---
